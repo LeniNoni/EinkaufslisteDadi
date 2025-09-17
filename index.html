@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Erweiterte Cloud Einkaufsliste</title>
+  <title>Einkaufsliste Cloud</title>
   <style>
     body { font-family: sans-serif; background: #fafafa; }
     .container { width: 340px; margin: 40px auto; background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 24px 20px; }
@@ -29,8 +29,7 @@
 <body>
   <div class="container">
     <div class="product-list">
-       <h2>ok Die Dadi Einkaufsliste</h2>
-      <h2>Sachen die gibt es ja garnicht</h2>
+     <h2>Die Dadi Einkaufsliste</h2>
       <div class="add-bar">
         <input type="text" class="add-input" id="addProductInput" placeholder="Produkt hinzufügen...">
         <button class="add-btn" onclick="addProduct()">+</button>
@@ -39,7 +38,8 @@
       <div class="history-list" id="historyList"></div>
     </div>
     <div class="done-list">
-     <h2>Einkaufen bitte</h2>
+       <div class="product-list">
+       <h2>Einkaufen bitte</h2>
       <div class="add-bar">
         <input type="text" class="add-input" id="addDoneInput" placeholder="Noni will habt(Dadi bekommt auch..">
         <button class="add-btn" onclick="addDone()">+</button>
@@ -50,9 +50,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-    import { 
-      getFirestore, collection, addDoc, doc, deleteDoc, updateDoc, onSnapshot, getDocs 
-    } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, doc, deleteDoc, updateDoc, onSnapshot, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
     // --- Firebase Config ---
     const firebaseConfig = {
@@ -80,9 +78,7 @@
 
     onSnapshot(historyCol, snapshot => {
       history = {};
-      snapshot.docs.forEach(docSnap => {
-        history[docSnap.id] = docSnap.data().count;
-      });
+      snapshot.docs.forEach(docSnap => { history[docSnap.id] = docSnap.data().count; });
       renderList();
     });
 
@@ -90,7 +86,7 @@
     async function addProduct() {
       const input = document.getElementById('addProductInput');
       const name = input.value.trim();
-      if (!name) return;
+      if(!name) return;
       await addDoc(productsCol, { name: name, count: 1, done: false });
       await updateHistory(name);
       input.value = '';
@@ -99,99 +95,92 @@
     async function addDone() {
       const input = document.getElementById('addDoneInput');
       const name = input.value.trim();
-      if (!name) return;
+      if(!name) return;
       await addDoc(productsCol, { name: name, count: 0, done: false });
       await updateHistory(name);
       input.value = '';
     }
 
     async function setCount(id, delta) {
-      const product = products.find(p => p.id === id);
-      if (!product) return;
-      await updateDoc(doc(db, "products", id), { count: Math.max(0, product.count + delta) });
+      const p = products.find(p=>p.id===id);
+      if(!p) return;
+      await updateDoc(doc(db,"products",id), { count: Math.max(0,p.count+delta) });
     }
 
     async function toggleDone(id) {
-      const product = products.find(p => p.id === id);
-      if (!product) return;
-      await updateDoc(doc(db, "products", id), { done: !product.done });
+      const p = products.find(p=>p.id===id);
+      if(!p) return;
+      await updateDoc(doc(db,"products",id), { done: !p.done });
     }
 
-    async function deleteProduct(id) {
-      await deleteDoc(doc(db, "products", id));
-    }
+    async function deleteProduct(id) { await deleteDoc(doc(db,"products",id)); }
 
-    async function updateHistory(name) {
-      const docRef = doc(db, "history", name);
-      const docSnap = await getDocs(collection(db, "history"));
-      if(history[name]){
-        await updateDoc(docRef, { count: history[name]+1 });
-      } else {
-        await setDoc(docRef, { count: 1 });
+    async function updateHistory(name){
+      const hRef = doc(db,"history",name);
+      const hSnap = await getDoc(hRef);
+      if(hSnap.exists()){
+        await updateDoc(hRef,{count: history[name]+1});
+      }else{
+        await setDoc(hRef,{count:1});
       }
     }
 
-    function renderList() {
+    async function addProductByName(name){
+      await addDoc(productsCol,{name:name,count:1,done:false});
+      await updateHistory(name);
+    }
+
+    function renderList(){
       const list = document.getElementById('productList');
       const done = document.getElementById('doneList');
-      const historyList = document.getElementById('historyList');
+      const histList = document.getElementById('historyList');
       list.innerHTML = '';
       done.innerHTML = '';
 
-      // Produkte
-      products.forEach(prod => {
-        if (prod.count > 0) {
-          const item = document.createElement('div'); item.className = 'product-item';
-          const label = document.createElement('span'); label.textContent = prod.name;
+      products.forEach((prod)=>{
+        if(prod.count>0){
+          const item=document.createElement('div'); item.className='product-item';
+          const label=document.createElement('span'); label.textContent=prod.name;
 
-          const controls = document.createElement('div'); controls.className = 'controls';
-          const upBtn = document.createElement('button'); upBtn.className = 'arrow-btn'; upBtn.innerHTML = '▲'; upBtn.onclick = () => setCount(prod.id, +1);
-          const downBtn = document.createElement('button'); downBtn.className = 'arrow-btn'; downBtn.innerHTML = '▼'; downBtn.onclick = () => setCount(prod.id, -1);
-          const count = document.createElement('span'); count.className = 'count'; count.textContent = prod.count;
-          controls.append(upBtn, count, downBtn);
+          const controls=document.createElement('div'); controls.className='controls';
+          const upBtn=document.createElement('button'); upBtn.className='arrow-btn'; upBtn.innerHTML='▲'; upBtn.onclick=()=>setCount(prod.id,+1);
+          const downBtn=document.createElement('button'); downBtn.className='arrow-btn'; downBtn.innerHTML='▼'; downBtn.onclick=()=>setCount(prod.id,-1);
+          const count=document.createElement('span'); count.className='count'; count.textContent=prod.count;
+          controls.append(upBtn,count,downBtn);
 
-          const deleteBtn = document.createElement('button'); deleteBtn.className = 'delete-btn'; deleteBtn.innerHTML = '−'; deleteBtn.onclick = () => deleteProduct(prod.id);
+          const deleteBtn=document.createElement('button'); deleteBtn.className='delete-btn'; deleteBtn.innerHTML='−'; deleteBtn.onclick=()=>deleteProduct(prod.id);
 
-          item.append(label, controls, deleteBtn);
+          item.append(label,controls,deleteBtn);
           list.appendChild(item);
-        } else {
-          const item = document.createElement('div'); item.className = 'done-item';
-          const left = document.createElement('div'); left.style.display='flex'; left.style.alignItems='center';
+        }else{
+          const item=document.createElement('div'); item.className='done-item';
+          const left=document.createElement('div'); left.style.display='flex'; left.style.alignItems='center';
 
-          const checkbox = document.createElement('input'); checkbox.type='checkbox'; checkbox.className='done-checkbox';
-          checkbox.checked = prod.done; checkbox.onchange = () => toggleDone(prod.id);
-          const label = document.createElement('span'); label.textContent = prod.name;
+          const checkbox=document.createElement('input'); checkbox.type='checkbox'; checkbox.className='done-checkbox';
+          checkbox.checked=prod.done; checkbox.onchange=()=>toggleDone(prod.id);
+          const label=document.createElement('span'); label.textContent=prod.name;
 
-          left.append(checkbox, label);
+          left.append(checkbox,label);
 
-          const deleteBtn = document.createElement('button'); deleteBtn.className='delete-btn'; deleteBtn.innerHTML='−'; deleteBtn.onclick = () => deleteProduct(prod.id);
+          const deleteBtn=document.createElement('button'); deleteBtn.className='delete-btn'; deleteBtn.innerHTML='−'; deleteBtn.onclick=()=>deleteProduct(prod.id);
 
-          item.append(left, deleteBtn);
+          item.append(left,deleteBtn);
           done.appendChild(item);
         }
       });
 
-      // History (max. 5)
-      const hist = Object.entries(history)
-        .sort((a,b)=>b[1]-a[1])
-        .slice(0,5)
-        .filter(([name]) => !products.find(p=>p.name.toLowerCase()===name.toLowerCase() && p.count>0));
-      historyList.innerHTML = hist.length ? 'Häufig benutzt: ' : '';
-      hist.forEach(([name,count]) => {
-        const el = document.createElement('span'); el.className='history-item';
-        el.textContent = `${name} (${count})`;
-        el.onclick = ()=>addProductByName(name);
-        historyList.appendChild(el);
+      const hist = Object.entries(history).sort((a,b)=>b[1]-a[1]).slice(0,5)
+        .filter(([name])=>!products.find(p=>p.name.toLowerCase()===name.toLowerCase() && p.count>0));
+      histList.innerHTML = hist.length?'Häufig benutzt: ':'';
+      hist.forEach(([name,count])=>{
+        const el=document.createElement('span'); el.className='history-item'; el.textContent=`${name} (${count})`;
+        el.onclick=()=>addProductByName(name);
+        histList.appendChild(el);
       });
     }
 
-    async function addProductByName(name) {
-      await addDoc(productsCol, { name:name, count:1, done:false });
-      await updateHistory(name);
-    }
-
-    document.getElementById('addProductInput').addEventListener('keydown',e=>{ if(e.key==='Enter') addProduct(); });
-    document.getElementById('addDoneInput').addEventListener('keydown',e=>{ if(e.key==='Enter') addDone(); });
+    document.getElementById('addProductInput').addEventListener('keydown',e=>{if(e.key==='Enter') addProduct();});
+    document.getElementById('addDoneInput').addEventListener('keydown',e=>{if(e.key==='Enter') addDone();});
   </script>
 </body>
 </html>
