@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Erweiterte Produktliste mit Löschen</title>
+  <title>EinkaufslisteDadi</title>
   <style>
     body { font-family: sans-serif; background: #fafafa; }
     .container { width: 340px; margin: 40px auto; background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 24px 20px; }
