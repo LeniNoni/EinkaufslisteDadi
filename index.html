@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Erweiterte Produktliste mit Löschen</title>
+  <title>Einkaufsliste für Dadi</title>
   <style>
     body { font-family: sans-serif; background: #fafafa; }
     .container { width: 340px; margin: 40px auto; background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 24px 20px; }
@@ -29,7 +29,8 @@
 <body>
   <div class="container">
     <div class="product-list">
-      <h2>Produkte</h2>
+       <h2>Die Dadi Einkaufsliste</h2>
+      <h2>Sachen die gibt es ja garnicht</h2>
       <div class="add-bar">
         <input type="text" class="add-input" id="addProductInput" placeholder="Produkt hinzufügen...">
         <button class="add-btn" onclick="addProduct()">+</button>
@@ -38,9 +39,9 @@
       <div class="history-list" id="historyList"></div>
     </div>
     <div class="done-list">
-      <h2>Erledigt</h2>
+      <h2>Einkaufen bitte</h2>
       <div class="add-bar">
-        <input type="text" class="add-input" id="addDoneInput" placeholder="Abhak-Punkt hinzufügen...">
+        <input type="text" class="add-input" id="addDoneInput" placeholder="Noni will habt(Dadi bekommt auch..">
         <button class="add-btn" onclick="addDone()">+</button>
       </div>
       <div id="doneList"></div>
@@ -60,9 +61,9 @@ const firebaseConfig = {
 
     if (products.length === 0) {
       products = [
-        { name: 'Eier', count: 2, done: false },
-        { name: 'Milch', count: 1, done: false },
-        { name: 'Brot', count: 0, done: false },
+        { name: 'Kaffee', count: 2, done: false },
+        { name: 'Wua', count: 1, done: false },
+        { name: 'Spezi', count: 0, done: false },
       ];
       saveData();
     }
